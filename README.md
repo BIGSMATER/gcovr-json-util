@@ -18,6 +18,50 @@ A utility tool for processing and analyzing gcovr JSON coverage reports.
 go install github.com/zjy-dev/gcovr-json-util@latest
 ```
 
+Or install a specific version:
+
+```bash
+# Install v2.0.0 (with filtering support)
+go install github.com/zjy-dev/gcovr-json-util@v2.0.0
+
+# Install v1.0.0 (basic functionality)
+go install github.com/zjy-dev/gcovr-json-util@v1.0.0
+```
+
+### Updating to v2.0.0 in Your Go Project
+
+If you're using this as a library in your Go project:
+
+**Option 1: Update to latest version**
+```bash
+go get -u github.com/zjy-dev/gcovr-json-util@latest
+go mod tidy
+```
+
+**Option 2: Update to specific v2.0.0**
+```bash
+go get github.com/zjy-dev/gcovr-json-util@v2.0.0
+go mod tidy
+```
+
+**Option 3: Edit go.mod directly**
+```go
+require (
+    github.com/zjy-dev/gcovr-json-util v2.0.0
+)
+```
+Then run:
+```bash
+go mod tidy
+```
+
+**Check your current version:**
+```bash
+go list -m github.com/zjy-dev/gcovr-json-util
+```
+
+### Building from Source
+
 Or build from source:
 
 ```bash
@@ -153,6 +197,49 @@ if err != nil {
 output := gcovr.FormatReport(report)
 fmt.Print(output)
 ```
+
+## Version History & Migration
+
+### v2.0.0 (Current) - November 12, 2025
+
+**New Features:**
+- ✨ Filter configuration support via YAML files
+- 🎯 Selective coverage tracking by file and function
+- 📋 New `--filter` flag
+- 🔧 New library functions: `ParseFilterConfig()`, `ApplyFilter()`
+
+**Dependencies:**
+- Added: `gopkg.in/yaml.v3`
+
+**Migration from v1.0.0:**
+```bash
+# Update dependency
+go get github.com/zjy-dev/gcovr-json-util@v2.0.0
+go mod tidy
+```
+
+**Code changes (optional, for new filtering feature):**
+```go
+// v1.0.0 code (still works in v2.0.0)
+baseReport, _ := gcovr.ParseReport("base.json")
+newReport, _ := gcovr.ParseReport("new.json")
+report, _ := gcovr.ComputeCoverageIncrease(baseReport, newReport)
+
+// v2.0.0 new feature (optional)
+filterConfig, _ := gcovr.ParseFilterConfig("filter.yaml")
+baseReport = gcovr.ApplyFilter(baseReport, filterConfig)
+newReport = gcovr.ApplyFilter(newReport, filterConfig)
+report, _ := gcovr.ComputeCoverageIncrease(baseReport, newReport)
+```
+
+**Backward Compatibility:** ✅ Fully backward compatible - all v1.0.0 code works in v2.0.0 without changes.
+
+### v1.0.0 - November 11, 2025
+
+**Features:**
+- Basic coverage diff functionality
+- Version information (`--version`)
+- CLI and library usage
 
 ## Project Structure
 
