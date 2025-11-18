@@ -46,3 +46,18 @@ type FunctionCoverageIncrease struct {
 type CoverageIncreaseReport struct {
 	Increases []FunctionCoverageIncrease
 }
+
+// FunctionUncovered represents the uncovered lines within a single function
+type FunctionUncovered struct {
+	File                 string
+	FunctionName         string // Mangled name
+	DemangledName        string
+	UncoveredLineNumbers []int
+	TotalLines           int
+	CoveredLines         int
+}
+
+// UncoveredReport represents a complete report of all uncovered functions and lines
+type UncoveredReport struct {
+	UncoveredFunctions []FunctionUncovered
+}

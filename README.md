@@ -5,6 +5,7 @@ A utility tool for processing and analyzing gcovr JSON coverage reports.
 ## Features
 
 - **Coverage Diff**: Compare two gcovr JSON reports to identify coverage increases
+- **Uncovered Lines Reporting**: Identify which lines, functions, and files lack coverage
 - **Filtering Support**: Filter coverage tracking by specific files and functions using a YAML config
 - Reports which functions have improved coverage
 - Shows old and new coverage percentages
@@ -33,29 +34,35 @@ go install github.com/zjy-dev/gcovr-json-util@v1.0.0
 If you're using this as a library in your Go project:
 
 **Option 1: Update to latest version**
+
 ```bash
 go get -u github.com/zjy-dev/gcovr-json-util@latest
 go mod tidy
 ```
 
 **Option 2: Update to specific v2.0.0**
+
 ```bash
 go get github.com/zjy-dev/gcovr-json-util/v2@v2.0.0
 go mod tidy
 ```
 
 **Option 3: Edit go.mod directly**
+
 ```go
 require (
     github.com/zjy-dev/gcovr-json-util/v2 v2.0.0
 )
 ```
+
 Then run:
+
 ```bash
 go mod tidy
 ```
 
 **Check your current version:**
+
 ```bash
 go list -m github.com/zjy-dev/gcovr-json-util/v2
 ```
@@ -87,6 +94,7 @@ go build -ldflags "-X main.Version=v1.0.0 -X main.GitCommit=$(git rev-parse --sh
 ```
 
 Check version:
+
 ```bash
 ./gcovr-util --version
 ```
@@ -95,17 +103,60 @@ Check version:
 
 ### CLI Tool
 
+#### Coverage Diff Command
+
 Compare two gcovr JSON reports:
 
 ```bash
 ./gcovr-util diff --base base_coverage.json --new new_coverage.json
 ```
 
-#### Options
+**Options:**
 
 - `--base, -b`: Base gcovr JSON report file (required)
 - `--new, -n`: New gcovr JSON report file (required)
 - `--filter, -f`: Filter config file (YAML) to specify target files and functions (optional)
+
+#### Uncovered Lines Command
+
+Report which lines are not covered in a gcovr JSON report:
+
+```bash
+./gcovr-util uncovered <gcovr-file.json>
+```
+
+**Options:**
+
+- `--filter, -f`: Filter config file (YAML) to specify target files and functions (optional)
+
+**Example:**
+
+```bash
+# Show all uncovered lines
+./gcovr-util uncovered coverage.json
+
+# Show uncovered lines only for filtered functions
+./gcovr-util uncovered --filter filter.yaml coverage.json
+```
+
+**Example Output:**
+
+```
+Uncovered Lines Report
+======================
+
+Found 2 function(s) with uncovered lines (4 total uncovered lines):
+
+1. File: demo.cc
+   Function: g()
+   Coverage: 0/3 lines (0.0%)
+   Uncovered Lines (3): [9 10 11]
+
+2. File: demo.cc
+   Function: main
+   Coverage: 4/5 lines (80.0%)
+   Uncovered Lines (1): [17]
+```
 
 #### Using Filter Configuration
 
@@ -135,9 +186,10 @@ targets:
 
 This will only report coverage increases for the specified functions in the specified files. All other files and functions will be ignored.
 
-**Note**: 
+**Note**:
+
 - File paths can be specified as relative paths, absolute paths, or just filenames
-- Function names should match the demangled names (e.g., "f" instead of "_Z1fv")
+- Function names should match the demangled names (e.g., "f" instead of "\_Z1fv")
 - The `*.json` files and filter config file paths support both relative and absolute paths
 
 #### Example Output
@@ -166,6 +218,8 @@ Found 2 function(s) with increased coverage:
 ### Go Library
 
 You can also use this tool as a Go library in your projects:
+
+**Example 1: Coverage Diff**
 
 ```go
 import "github.com/zjy-dev/gcovr-json-util/v2/pkg/gcovr"
@@ -200,20 +254,52 @@ output := gcovr.FormatReport(report)
 fmt.Print(output)
 ```
 
+**Example 2: Find Uncovered Lines**
+
+```go
+import "github.com/zjy-dev/gcovr-json-util/v2/pkg/gcovr"
+
+// Parse coverage report
+report, err := gcovr.ParseReport("coverage.json")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Optional: Apply filtering
+filterConfig, err := gcovr.ParseFilterConfig("filter.yaml")
+if err != nil {
+    log.Fatal(err)
+}
+report = gcovr.ApplyFilter(report, filterConfig)
+
+// Find uncovered lines
+uncoveredReport, err := gcovr.FindUncoveredLines(report)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Format and display results
+output := gcovr.FormatUncoveredReport(uncoveredReport)
+fmt.Print(output)
+```
+
 ## Version History & Migration
 
 ### v2.0.0 (Current) - November 12, 2025
 
 **New Features:**
+
 - ✨ Filter configuration support via YAML files
 - 🎯 Selective coverage tracking by file and function
 - 📋 New `--filter` flag
 - 🔧 New library functions: `ParseFilterConfig()`, `ApplyFilter()`
 
 **Dependencies:**
+
 - Added: `gopkg.in/yaml.v3`
 
 **Migration from v1.0.0:**
+
 ```bash
 # Update dependency (note the /v2 suffix for v2.0.0+)
 go get github.com/zjy-dev/gcovr-json-util/v2@v2.0.0
@@ -221,6 +307,7 @@ go mod tidy
 ```
 
 **Important:** For v2.0.0+, the import path includes `/v2` suffix:
+
 ```go
 // Old (v1.0.0)
 import "github.com/zjy-dev/gcovr-json-util/pkg/gcovr"
@@ -230,6 +317,7 @@ import "github.com/zjy-dev/gcovr-json-util/v2/pkg/gcovr"
 ```
 
 **Code changes (optional, for new filtering feature):**
+
 ```go
 // v1.0.0 code (still works in v2.0.0)
 baseReport, _ := gcovr.ParseReport("base.json")
@@ -248,6 +336,7 @@ report, _ := gcovr.ComputeCoverageIncrease(baseReport, newReport)
 ### v1.0.0 - November 11, 2025
 
 **Features:**
+
 - Basic coverage diff functionality
 - Version information (`--version`)
 - CLI and library usage
@@ -260,13 +349,15 @@ report, _ := gcovr.ComputeCoverageIncrease(baseReport, newReport)
 ├── version.go           # Version information
 ├── cmd/                 # CLI commands
 │   ├── root.go         # Root command
-│   └── diff.go         # Diff command implementation
+│   ├── diff.go         # Diff command implementation
+│   └── uncovered.go    # Uncovered lines command
 ├── pkg/
 │   └── gcovr/          # Public library package
 │       ├── types.go    # Data structures
 │       ├── parser.go   # JSON parsing
 │       ├── diff.go     # Coverage diff logic
-│       └── filter.go   # Filter configuration
+│       ├── filter.go   # Filter configuration
+│       └── uncovered.go # Uncovered lines logic
 ├── test_data/          # Sample test files
 │   ├── f.json
 │   ├── g.json
@@ -280,6 +371,8 @@ report, _ := gcovr.ComputeCoverageIncrease(baseReport, newReport)
 
 ## How It Works
 
+### Coverage Diff
+
 1. **Parse**: Reads and parses two gcovr JSON reports
 2. **Compare**: Compares line-by-line coverage for each function
 3. **Identify**: Identifies lines that were uncovered in base but are covered in new report
@@ -289,6 +382,16 @@ report, _ := gcovr.ComputeCoverageIncrease(baseReport, newReport)
    - New coverage percentage and line count
    - Number of newly covered lines
    - Specific line numbers that gained coverage
+
+### Uncovered Lines
+
+1. **Parse**: Reads and parses a gcovr JSON report
+2. **Analyze**: Identifies all lines with zero coverage count
+3. **Group**: Groups uncovered lines by file and function
+4. **Report**: Generates a detailed report with:
+   - Function names (demangled for C++)
+   - Coverage percentage and line count
+   - Specific line numbers that lack coverage
 
 ## Use Cases
 
