@@ -283,9 +283,94 @@ output := gcovr.FormatUncoveredReport(uncoveredReport)
 fmt.Print(output)
 ```
 
+**Example 3: Working with Grouped Data**
+
+The `FindUncoveredLines()` function returns data already grouped by file:
+
+```go
+uncoveredReport, err := gcovr.FindUncoveredLines(report)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Iterate through files
+for _, file := range uncoveredReport.Files {
+    fmt.Printf("File: %s\n", file.FilePath)
+
+    // Iterate through uncovered functions in this file
+    for _, fn := range file.UncoveredFunctions {
+        fmt.Printf("  Function: %s\n", fn.DemangledName)
+        fmt.Printf("  Coverage: %d/%d lines\n", fn.CoveredLines, fn.TotalLines)
+        fmt.Printf("  Uncovered Lines: %v\n", fn.UncoveredLineNumbers)
+    }
+}
+```
+
+### API Data Structures
+
+**UncoveredReport** - Grouped by file structure:
+
+```go
+type UncoveredReport struct {
+    Files []FileUncovered  // Files containing uncovered lines
+}
+
+type FileUncovered struct {
+    FilePath           string               // Path to the source file
+    UncoveredFunctions []FunctionUncovered  // Uncovered functions in this file
+}
+
+type FunctionUncovered struct {
+    FunctionName         string  // Mangled function name
+    DemangledName        string  // Human-readable function name
+    UncoveredLineNumbers []int   // Line numbers without coverage
+    TotalLines           int     // Total lines in function
+    CoveredLines         int     // Number of covered lines
+}
+```
+
 ## Version History & Migration
 
-### v2.0.0 (Current) - November 12, 2025
+### v2.1.0 - November 19, 2025
+
+**New Features:**
+
+- ✨ Uncovered lines reporting feature
+- 🎯 Identify files, functions, and specific lines lacking coverage
+- 📋 New `uncovered` command (alias: `un`)
+- 🔧 New library functions: `FindUncoveredLines()`, `FormatUncoveredReport()`
+- 📊 Data returned grouped by file for easier programmatic access
+
+**API Changes:**
+
+- New types: `FileUncovered`, updated `UncoveredReport` structure
+- `FindUncoveredLines()` now returns data grouped by file (breaking change for API users)
+
+**Migration from v2.0.0:**
+
+```bash
+go get github.com/zjy-dev/gcovr-json-util/v2@v2.1.0
+go mod tidy
+```
+
+If you were using the uncovered lines API in v2.0.0, update your code:
+
+```go
+// Old (v2.0.0 - if used)
+for _, fn := range uncoveredReport.UncoveredFunctions {
+    fmt.Printf("File: %s, Function: %s\n", fn.File, fn.FunctionName)
+}
+
+// New (v2.1.0)
+for _, file := range uncoveredReport.Files {
+    fmt.Printf("File: %s\n", file.FilePath)
+    for _, fn := range file.UncoveredFunctions {
+        fmt.Printf("  Function: %s\n", fn.FunctionName)
+    }
+}
+```
+
+### v2.0.0 - November 12, 2025
 
 **New Features:**
 

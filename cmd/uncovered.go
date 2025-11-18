@@ -59,7 +59,7 @@ func runUncovered(cmd *cobra.Command, args []string) error {
 	}
 
 	// Find uncovered lines
-	fmt.Println("\nAnalyzing coverage...\n")
+	fmt.Println("Analyzing coverage...")
 	uncoveredReport, err := gcovr.FindUncoveredLines(report)
 	if err != nil {
 		return fmt.Errorf("failed to find uncovered lines: %w", err)

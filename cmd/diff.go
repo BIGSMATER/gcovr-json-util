@@ -75,7 +75,7 @@ func runDiff(cmd *cobra.Command, args []string) error {
 	}
 
 	// Compute coverage increase
-	fmt.Println("\nComputing coverage increases...\n")
+	fmt.Println("Computing coverage increases...")
 	report, err := gcovr.ComputeCoverageIncrease(baseReport, newReport)
 	if err != nil {
 		return fmt.Errorf("failed to compute coverage increase: %w", err)
